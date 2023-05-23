@@ -1,0 +1,88 @@
+CONSULTAS - SAT GLOBAL
+
+	1. Obtener todos los usuarios que tengan como artista favorito a "DJMIXER99" (ID 5).
+
+SELECT Usuarios.*, Artistas.* FROM Usuarios
+INNER JOIN Artistas ON Usuarios.artista_ID = 5
+GROUP BY artista_ID;
+
+	2. Obtener las publicaciones que sean de ESPAÑA y del genero REGGAETON.
+
+SELECT * FROM Publicaciones
+WHERE pais_ID = "spain" 
+AND genero = "reggaeton";
+
+
+	3. Obtener el número total de publicaciones realizadas por cada artista.
+
+SELECT a.ID, (SELECT COUNT(*) 
+                    FROM Publicaciones p 
+                    WHERE p.artista_ID = a.ID) AS total_publicaciones
+FROM artistas a
+GROUP BY a.ID;
+
+
+	4. Obtener los nombres de los artistas que tienen más de 1000 seguidores en su perfil.
+
+SELECT a.ID
+FROM Artistas a
+WHERE a.ID IN (SELECT pa.artista_ID 
+               FROM Perfil_Artista pa 
+               WHERE pa.n_followers > 1000)
+GROUP BY a.ID;
+
+	5. Obtener el título de la publicación, el nombre del artista y el país de origen de todas las publicaciones con más de 100 LIKES.
+
+SELECT p.titulo, a.ID, p.pais_ID
+FROM Publicaciones p
+JOIN Artistas a ON p.artista_ID = a.ID
+WHERE p.N_Likes > 100;
+
+	6. Obtener el número total de publicaciones realizadas por cada artista que sea "CANTANTE".
+
+SELECT c.username, COUNT(p.ID) AS total_publicaciones
+FROM Cantantes c
+INNER JOIN Artistas a ON c.artistas_ID = a.ID
+LEFT JOIN Publicaciones p ON a.ID = p.artista_ID
+GROUP BY c.username;
+
+	7. Obtener el número de seguidores de cada artista.
+
+SELECT a.ID, p.n_followers
+FROM Artistas a
+LEFT JOIN Perfil_Artista p ON a.ID = p.artista_ID
+ORDER BY p.n_followers DESC;
+
+	8. PROCEDIMIENTO: Actualizar Likes en Publicaciones
+
+CREATE PROCEDURE ActualizarLikesPublicacion
+    @publicacionID INT,
+    @nuevosLikes INT
+AS
+BEGIN
+    UPDATE Publicaciones
+    SET N_Likes = @nuevosLikes
+    WHERE ID = @publicacionID;
+END;
+
+	9. PROCEDIMIENTO: Actualizar seguidores en PERFIL_ARTISTA.
+
+CREATE PROCEDURE ActualizarSeguidoresPerfil
+    @perfilID INT,
+    @nuevosSeguidores INT
+AS
+BEGIN
+    UPDATE Perfil_Artista
+    SET n_followers = @nuevosSeguidores
+    WHERE ID = @perfilID;
+END;
+
+	10. VISTA: Obtener el número de likes en las publicaciones de los artistas filtrado por país.
+
+CREATE VIEW LikesPorPais AS
+SELECT P.pais_ID, COUNT(P.ID) AS NumeroLikes
+FROM Publicaciones P
+GROUP BY P.pais_ID;
+
+
+
